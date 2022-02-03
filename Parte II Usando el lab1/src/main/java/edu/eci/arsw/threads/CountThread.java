@@ -5,28 +5,25 @@
  */
 package edu.eci.arsw.threads;
 
-import java.util.ArrayList;
+import java.lang.Thread;
 
 /**
  *
  * @author hcadavid
  */
 public class CountThread extends Thread{
-    private Integer inicio;
-    private Integer fin;
-
-    public CountThread(Integer start, Integer end){
-        this.inicio = start;
-        this.fin = end;
-    }
-    public void run(){
-
-        for(int i = inicio ; i<= fin ; i++ ){
-
-
-            System.out.println(i);
-        }
-    }
-
-
+	
+	public int a;
+	public int b;
+	
+	public CountThread(int a, int b) {
+		this.a = a;
+		this.b = b;
+	}
+	
+	public void run() {
+		for (int i = a ; i <= b; i++) {
+			System.out.println(i);
+		}
+	}
 }
