@@ -15,6 +15,7 @@ public class HostBlackListThread extends Thread{
 	private LinkedList<Integer> blackListOcurrences=new LinkedList<>();
 	Object pivote;
 	int max;
+	boolean parar = false;
 	
 	public HostBlackListThread(int ini, int fini, String ipAddress, Object pivote, int max) {
 		this.ini = ini;
@@ -34,7 +35,7 @@ public class HostBlackListThread extends Thread{
 				ocurrencesCount++;
 			}
 
-			if (blackListOcurrences.size() > max-1){
+			if (parar){
 				synchronized (pivote){
 					try{
 						System.out.println("Ya no es seguro");
@@ -54,5 +55,9 @@ public class HostBlackListThread extends Thread{
 	
 	public List<Integer> getBlackListOcurrences(){
 		return blackListOcurrences;
+	}
+
+	public void setParar(){
+		parar = true;
 	}
 }

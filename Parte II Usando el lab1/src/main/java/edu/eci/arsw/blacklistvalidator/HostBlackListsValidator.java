@@ -9,6 +9,7 @@ import edu.eci.arsw.spamkeywordsdatasource.HostBlacklistsDataSourceFacade;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,6 +21,7 @@ public class HostBlackListsValidator {
 
     private static final int BLACK_LIST_ALARM_COUNT=5;
     public Object pivote ;
+    private AtomicInteger a = new AtomicInteger(0);
     
     /**
      * Check the given host's IP address in all the available black lists,
@@ -83,13 +85,16 @@ public class HostBlackListsValidator {
         	lth.add(th);
         }
         
-        for(HostBlackListThread hbth:lth) {
-        	hbth.join();
-        }
+
         
         for(HostBlackListThread hbth:lth) {
+            a.addAndGet(1);
+            hbth.join();
         	ocurrencesCount = ocurrencesCount + hbth.ocurrences();
         	blackListOcurrences.addAll(hbth.getBlackListOcurrences());
+        	if (ocurrencesCount >= 5 ){
+                System.out.println("Ya no es seguro XD");
+            }
         }
         
         if (ocurrencesCount>=BLACK_LIST_ALARM_COUNT){
@@ -99,7 +104,7 @@ public class HostBlackListsValidator {
             skds.reportAsTrustworthy(ipaddress);
         }                
         
-        LOG.log(Level.INFO, "Checked Black Lists:{0} of {1}", new Object[]{skds.getRegisteredServersCount(),skds.getRegisteredServersCount()});
+        LOG.log(Level.INFO, "Checked Black Lists:{0} of {1}", new Object[]{a,skds.getRegisteredServersCount()});
         
         return blackListOcurrences;
     }
