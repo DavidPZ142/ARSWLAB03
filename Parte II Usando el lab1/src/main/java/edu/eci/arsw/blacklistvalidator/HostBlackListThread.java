@@ -15,7 +15,7 @@ public class HostBlackListThread extends Thread{
 	private LinkedList<Integer> blackListOcurrences=new LinkedList<>();
 	Object pivote;
 	int max;
-	boolean parar = false;
+	private static boolean parar = false;
 	
 	public HostBlackListThread(int ini, int fini, String ipAddress, Object pivote, int max) {
 		this.ini = ini;
@@ -29,23 +29,26 @@ public class HostBlackListThread extends Thread{
 		
 		HostBlacklistsDataSourceFacade skds = HostBlacklistsDataSourceFacade.getInstance();
 		
-		for(int i = ini; i<=fini;i++) {
+		for(int i = ini; i<=fini && ocurrencesCount<5;i++) {
+
+			synchronized (pivote) {
+
+				if (parar ) {
+
+					try {
+						System.out.println("Entro al wait");
+
+						pivote.wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
 			if(skds.isInBlackListServer(i, ipAddress)) {
 				blackListOcurrences.add(i);
 				ocurrencesCount++;
 			}
 
-			if (parar){
-				synchronized (pivote){
-					try{
-						System.out.println("Ya no es seguro");
-						System.out.println(blackListOcurrences);
-						pivote.wait();
-					}catch(InterruptedException e){
-						e.printStackTrace();
-					}
-				}
-			}
 		}
 	}
 	
@@ -57,7 +60,11 @@ public class HostBlackListThread extends Thread{
 		return blackListOcurrences;
 	}
 
-	public void setParar(){
+	public static void setParar(){
 		parar = true;
+	}
+
+	public static boolean getParar(){
+		return parar;
 	}
 }

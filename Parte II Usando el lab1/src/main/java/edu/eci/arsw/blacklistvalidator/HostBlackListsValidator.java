@@ -33,38 +33,7 @@ public class HostBlackListsValidator {
      * @param ipaddress suspicious host's IP address.
      * @return  Blacklists numbers where the given host's IP address was found.
      */
-    public List<Integer> checkHost(String ipaddress){
-        
-        LinkedList<Integer> blackListOcurrences=new LinkedList<>();
 
-        int ocurrencesCount=0;
-
-        HostBlacklistsDataSourceFacade skds=HostBlacklistsDataSourceFacade.getInstance();
-
-        int checkedListsCount=0;
-
-        for (int i=0;i<skds.getRegisteredServersCount() && ocurrencesCount<BLACK_LIST_ALARM_COUNT;i++){
-            checkedListsCount++;
-
-            if (skds.isInBlackListServer(i, ipaddress)){
-
-                blackListOcurrences.add(i);
-
-                ocurrencesCount++;
-            }
-        }
-
-        if (ocurrencesCount>=BLACK_LIST_ALARM_COUNT){
-            skds.reportAsNotTrustworthy(ipaddress);
-        }
-        else{
-            skds.reportAsTrustworthy(ipaddress);
-        }
-
-        LOG.log(Level.INFO, "Checked Black Lists:{0} of {1}", new Object[]{checkedListsCount, skds.getRegisteredServersCount()});
-
-        return blackListOcurrences;
-    }
     
     public List<Integer> checkHost(String ipaddress, int n) throws InterruptedException{
         pivote = new Object();
@@ -83,6 +52,12 @@ public class HostBlackListsValidator {
         	HostBlackListThread th = new HostBlackListThread(ini, fin, ipaddress,pivote,BLACK_LIST_ALARM_COUNT);
         	th.start();
         	lth.add(th);
+            try{
+                th.join(10);
+
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
         }
         
 
@@ -92,13 +67,17 @@ public class HostBlackListsValidator {
             hbth.join();
         	ocurrencesCount = ocurrencesCount + hbth.ocurrences();
         	blackListOcurrences.addAll(hbth.getBlackListOcurrences());
-        	if (ocurrencesCount >= 5 ){
-                System.out.println("Ya no es seguro XD");
+        	if (ocurrencesCount >= 5  ){
+                //System.out.println("Ya no es seguro XD");
+                HostBlackListThread.setParar();
+                break;
+
             }
         }
         
         if (ocurrencesCount>=BLACK_LIST_ALARM_COUNT){
             skds.reportAsNotTrustworthy(ipaddress);
+
         }
         else{
             skds.reportAsTrustworthy(ipaddress);
